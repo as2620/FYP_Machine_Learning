@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Read the data from the CSV file
-csv_filename = "breathing_rate_data_3_to_40.csv"
+csv_filename = "breathing_rate_data_10_to_20.csv"
 csv_filepath = os.path.abspath(os.path.join("..", "..", "Machine_Learning_Data", csv_filename))
 
 data = pd.read_csv(csv_filepath)

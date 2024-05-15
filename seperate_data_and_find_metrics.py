@@ -139,11 +139,7 @@ def find_gsr_metrics(sig):
     return gsr_data["SCR_Peaks_N"].to_numpy()[0], gsr_data["SCR_Peaks_Amplitude_Mean"].to_numpy()[0], gsr_data["EDA_Tonic_SD"].to_numpy()[0]
 
 def find_average_exhaled(sig): 
-    sum = 0
-    for point in sig: 
-        sum += point
-    average = sum / len(sig)
-    return average
+    return np.mean(sig)
 
 # Define filepaths
 filepath = '../../Machine_Learning_Data/Stroop_Trial_2/stroop_trial_2_vm.json'
@@ -211,16 +207,14 @@ ppg_red = hp.filter_signal(ppg_red, cutoff = [0.5, 4.5], sample_rate = 20.0, fil
 ppg_ir = scipy.signal.detrend(shirt_data['ppg_ir'])
 ppg_ir= hp.filter_signal(ppg_ir, cutoff = [0.5, 4.5], sample_rate = 20.0, filtertype='bandpass', return_top = False)
 
-# co2 = scipy.signal.detrend(mask_data['co2'])
 co2 = hp.filter_signal(mask_data['co2'], cutoff = 1.5, sample_rate = 20.0, filtertype='lowpass', return_top = False)
-# plot_signal(co2, mask_timestamps, "co2")
+plot_signal(co2, mask_timestamps, "co2")
 
-# voc = scipy.signal.detrend(mask_data['voc'])
 voc = hp.filter_signal(mask_data['voc'], cutoff = 1.5, sample_rate = 20.0, filtertype='lowpass', return_top = False)
 
 # Split data into 30s intervals. Make sure they consist of shirt and mask data.
 window_size = 110
-overlap = 90
+overlap = 107
 total_time = minutes * 60 
 
 # Calculate sampling rate
@@ -248,6 +242,8 @@ while end_index <= len(shirt_timestamps):
     
     start_index += shirt_samples_per_window - shirt_overlap_per_window  # Move start index forward
     end_index += shirt_samples_per_window - shirt_overlap_per_window  # Move end index forward
+
+print("Number of Windows:", len(windows))
 
 for window in windows:
     _chest_coil = []
@@ -356,36 +352,61 @@ for window in windows:
 csv_filename = "total_metrics_data.csv"
 csv_filepath = os.path.abspath(os.path.join("..", "Machine_Learning_Data", csv_filename))
 
-try:
-    with open(csv_filepath, 'a', newline='') as csvfile: 
-        writer = csv.writer(csvfile)
-        for i in range(len(heart_rates)):
-            writer.writerow([classification,
-                            heart_rates[i],
-                            spo2_levels[i],
-                            systolic_amplitudes[i],
-                            hrvs[i],
-                            chest_rates[i],
-                            chest_rvts[i],
-                            chest_symmetries_pt[i],
-                            chest_symmetries_rd[i],
-                            chest_inhale_times[i],
-                            chest_exhale_times[i],
-                            chest_ie_times[i],
-                            abdomen_rates[i],
-                            abdomen_rvts[i],
-                            abdomen_symmetries_pt[i],
-                            abdomen_symmetries_rd[i],
-                            abdomen_inhale_times[i],
-                            abdomen_exhale_times[i],
-                            abdomen_ie_times[i],
-                            num_sda_peaks[i],
-                            average_sda_amplitudes[i],
-                            eda_tonic_sds[i],
-                            average_co2s[i],
-                            average_vocs[i]])
-        print("Data written to csv file")
-except Exception as e:
-    print("Error occurred while writing to the CSV file:", e)
+print(heart_rates)
+print(spo2_levels)
+print(systolic_amplitudes)
+print(hrvs)
+print(chest_rates)
+print(chest_rvts)
+print(chest_symmetries_pt)
+print(chest_symmetries_rd)
+print(chest_inhale_times)
+print(chest_exhale_times)
+print(chest_ie_times)
+print(abdomen_rates)
+print(abdomen_rvts)
+print(abdomen_symmetries_pt)
+print(abdomen_symmetries_rd)
+print(abdomen_inhale_times)
+print(abdomen_exhale_times)
+print(abdomen_ie_times)
+print(num_sda_peaks)
+print(average_sda_amplitudes)
+print(eda_tonic_sds)
+print(average_co2s)
+print(average_vocs)
 
-print("CSV File Path:", csv_filepath)
+
+# try:
+#     with open(csv_filepath, 'a', newline='') as csvfile: 
+#         writer = csv.writer(csvfile)
+#         for i in range(len(heart_rates)):
+#             writer.writerow([classification,
+#                             heart_rates[i],
+#                             spo2_levels[i],
+#                             systolic_amplitudes[i],
+#                             hrvs[i],
+#                             chest_rates[i],
+#                             chest_rvts[i],
+#                             chest_symmetries_pt[i],
+#                             chest_symmetries_rd[i],
+#                             chest_inhale_times[i],
+#                             chest_exhale_times[i],
+#                             chest_ie_times[i],
+#                             abdomen_rates[i],
+#                             abdomen_rvts[i],
+#                             abdomen_symmetries_pt[i],
+#                             abdomen_symmetries_rd[i],
+#                             abdomen_inhale_times[i],
+#                             abdomen_exhale_times[i],
+#                             abdomen_ie_times[i],
+#                             num_sda_peaks[i],
+#                             average_sda_amplitudes[i],
+#                             eda_tonic_sds[i],
+#                             average_co2s[i],
+#                             average_vocs[i]])
+#         print("Data written to csv file")
+# except Exception as e:
+#     print("Error occurred while writing to the CSV file:", e)
+
+# print("CSV File Path:", csv_filepath)
