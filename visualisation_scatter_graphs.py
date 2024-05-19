@@ -6,8 +6,8 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 
 # Read the data from the CSV file
-# csv_filename = "breathing_rate_data.csv"
-csv_filename = "breathing_rate_data_3_5_30_40.csv"
+csv_filename = "breathing_rate_data.csv"
+# csv_filename = "breathing_rate_data_3_5_30_40.csv"
 
 csv_filepath = os.path.abspath(os.path.join("..", "..", "Machine_Learning_Data", csv_filename))
 
@@ -53,23 +53,8 @@ for name, group in grouped_data:
 # Reset index of the cleaned_data DataFrame
 cleaned_data.reset_index(drop=True, inplace=True)
 
-# Box Plots
-# Optionally, plot box plots before and after outlier removal
-# for name, group in grouped_data:
-#     for feature in column_names:
-#         if feature != "Breathing Type":
-#             # Box plot before removing outliers
-#             sns.boxplot(x=group['Breathing Type'], y=group[feature])
-#             plt.title(f"Before removing outliers - {feature} for {name}")
-#             plt.show()
-
-# for name, group in cleaned_data.groupby('Breathing Type'):
-#     for feature in column_names:
-#         if feature != "Breathing Type":
-#             # Box plot after removing outliers
-#             sns.boxplot(x=group['Breathing Type'], y=group[feature])
-#             plt.title(f"After removing outliers - {feature} for {name}")
-#             plt.show()
+# Define a custom color palette
+palette = sns.color_palette(["#e81416", "#ffa500", "#faeb36", "#79c314", "#36cedc" ,"#487de7", "#70369d"], len(class_order))
 
 # Divide the cleaned data set into features (X) and target variable (y)
 x = cleaned_data.iloc[:, 1:24].values
@@ -79,14 +64,16 @@ y = cleaned_data.iloc[:, 0].values
 le = LabelEncoder()
 y = le.fit_transform(y)
 
-# Define a custom color palette
-palette = sns.color_palette(["#e81416", "#ffa500", "#faeb36", "#79c314", "#36cedc" ,"#487de7", "#70369d"], len(class_order))
+# Plot each feature against "Average Chest Breathing Rate"
+feature_to_plot_against = 'Average Chest Breathing Rate'
 
-# Visualize the distribution of each feature using histograms.
-for i, feature in enumerate(column_names[1:]):
-    plt.figure(figsize=(12, 6))
-    sns.histplot(data=cleaned_data, x=feature, hue='Breathing Type', palette=palette, kde=True)
-    plt.title(f'{feature} Distribution')
-
-plt.tight_layout()
-plt.show()
+for feature in column_names:
+    if feature != "Breathing Type" and feature != feature_to_plot_against:
+        plt.figure(figsize=(12, 6))
+        sns.scatterplot(data=cleaned_data, x=feature_to_plot_against, y=feature, hue='Breathing Type', palette=palette)
+        plt.title(f'{feature_to_plot_against} vs {feature}')
+        plt.xlabel(feature_to_plot_against)
+        plt.ylabel(feature)
+        plt.legend(title='Breathing Type', bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+        plt.show()

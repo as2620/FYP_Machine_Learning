@@ -96,7 +96,7 @@ def find_spo2(ir_sig, red_sig):
     spo2 =  ((-45.060*R*R)/10000) + ((30.354*R)/100) + 94.845 
     return spo2
 
-def find_systolic_amplitude(sig):  
+def find_systolic_amplitude_and_hrv(sig):  
     peaks = nk.ppg_findpeaks(sig, sampling_rate=20)
     hrv = nk.hrv_time(peaks, sampling_rate=20)
     peaks = peaks["PPG_Peaks"]
@@ -141,11 +141,22 @@ def find_gsr_metrics(sig):
 def find_average_exhaled(sig): 
     return np.mean(sig)
 
-# Define filepaths
-filepath = '../../Machine_Learning_Data/Stroop_Trial_2/stroop_trial_2_vm.json'
+# Define filepaths 
+filepath = '../../Machine_Learning_Data/Stroop_Trial_2/stroop_trial_2_as.json'
 classification = "S2"
+particpant_id = "10"
+stress_rating = "5"
+reaction_time = "864"
+score = "84"
+
+#  Define window size and overlap
+window_size = 40
+overlap = 35
+
+# Length of the data in minutes
 minutes = 3
 
+# Define arrays to store the metrics
 heart_rates = []
 spo2_levels = []
 systolic_amplitudes = []
@@ -208,13 +219,12 @@ ppg_ir = scipy.signal.detrend(shirt_data['ppg_ir'])
 ppg_ir= hp.filter_signal(ppg_ir, cutoff = [0.5, 4.5], sample_rate = 20.0, filtertype='bandpass', return_top = False)
 
 co2 = hp.filter_signal(mask_data['co2'], cutoff = 1.5, sample_rate = 20.0, filtertype='lowpass', return_top = False)
-plot_signal(co2, mask_timestamps, "co2")
+# plot_signal(co2, mask_timestamps, "co2")
 
 voc = hp.filter_signal(mask_data['voc'], cutoff = 1.5, sample_rate = 20.0, filtertype='lowpass', return_top = False)
 
-# Split data into 30s intervals. Make sure they consist of shirt and mask data.
-window_size = 110
-overlap = 107
+# Windowing
+# Split data into the intervals. Make sure they consist of shirt and mask data
 total_time = minutes * 60 
 
 # Calculate sampling rate
@@ -264,31 +274,16 @@ for window in windows:
     # PPG Metrics
     hr = find_max_freq(_ppg_ir)
     spo2 = find_spo2(_ppg_ir, _ppg_red)
-    systolic_amp, hrv =  find_systolic_amplitude(np.array(_ppg_red))
+    systolic_amp, hrv =  find_systolic_amplitude_and_hrv(np.array(_ppg_red))
 
     heart_rates.append(hr)
     spo2_levels.append(spo2)
     hrvs.append(hrv)
     systolic_amplitudes.append(systolic_amp)
 
-    # print("Heart Rate: ", hr)
-    # print("SpO2: ", spo2)
-    # print("HRV: ", hrv)
-    # print("Systolic Amplitudes: ", systolic_amp)
-
     # K-RIP Metrics
     chest_rate, chest_rvt, chest_symmetry_pt, chest_symmetry_rd, chest_inhale_time, chest_exhale_time,  chest_ie_time = find_rsp_metrics(_chest_coil)
     abdomen_rate, abdomen_rvt, abdomen_symmetry_pt, abdomen_symmetry_rd, abdomen_inhale_time, abdomen_exhale_time,  abdomen_ie_time = find_rsp_metrics(_abdomen_coil)
-
-    # print("Chest Rate: ", chest_rate)
-    # print("Chest RVT: ", chest_rvt)
-    # print("Chest Symmetry PT: ", chest_symmetry_pt)
-    # print("Chest Symmetry RD: ", chest_symmetry_rd)
-
-    # print("Abdomen Rate: ", abdomen_rate)
-    # print("Abdomen RVT: ", abdomen_rvt)
-    # print("Abdomen Symmetry PT: ", abdomen_symmetry_pt)
-    # print("Abdomen Symmetry RD: ", abdomen_symmetry_rd)
 
     chest_rates.append(chest_rate)
     chest_rvts.append(chest_rvt)
@@ -338,75 +333,82 @@ for window in windows:
     # CO2 Metrics 
     # We can get breathing rate from KRIP and we know KRIP and CO2 sensor are linearly correlated, therefore the only 
     # key value for us to get out is the avergae CO2 exhaled
-    co2_exhaled = find_average_exhaled(co2)
+    co2_exhaled = find_average_exhaled(_co2)
 
     # VOC Metrics
     # We know that VOC and CO2 are correlated and we have breathing rate from KRIP so therefore the only key value 
     # for us to get out is the average VOC exhaled. 
-    voc_exhaled = find_average_exhaled(voc)
+    voc_exhaled = find_average_exhaled(_voc)
 
     average_co2s.append(co2_exhaled)
     average_vocs.append(voc_exhaled)
 
 # Append metrics and label to a csv file.
-csv_filename = "total_metrics_data.csv"
-csv_filepath = os.path.abspath(os.path.join("..", "Machine_Learning_Data", csv_filename))
+csv_filepath = filepath = '../../Machine_Learning_Data/total_data.csv'
 
-print(heart_rates)
-print(spo2_levels)
-print(systolic_amplitudes)
-print(hrvs)
-print(chest_rates)
-print(chest_rvts)
-print(chest_symmetries_pt)
-print(chest_symmetries_rd)
-print(chest_inhale_times)
-print(chest_exhale_times)
-print(chest_ie_times)
-print(abdomen_rates)
-print(abdomen_rvts)
-print(abdomen_symmetries_pt)
-print(abdomen_symmetries_rd)
-print(abdomen_inhale_times)
-print(abdomen_exhale_times)
-print(abdomen_ie_times)
-print(num_sda_peaks)
-print(average_sda_amplitudes)
-print(eda_tonic_sds)
-print(average_co2s)
-print(average_vocs)
+print(particpant_id)
+print(classification)
+print(stress_rating)
+print(reaction_time)
+print(score)
+print(np.shape(heart_rates))
+print(np.shape(spo2_levels))
+print(np.shape(systolic_amplitudes))
+print(np.shape(hrvs))
+print(np.shape(chest_rates))
+print(np.shape(chest_rvts))
+print(np.shape(chest_symmetries_pt))
+print(np.shape(chest_symmetries_rd))
+print(np.shape(chest_inhale_times))
+print(np.shape(chest_exhale_times))
+print(np.shape(chest_ie_times))
+print(np.shape(abdomen_rates))
+print(np.shape(abdomen_rvts))
+print(np.shape(abdomen_symmetries_pt))
+print(np.shape(abdomen_symmetries_rd))
+print(np.shape(abdomen_inhale_times))
+print(np.shape(abdomen_exhale_times))
+print(np.shape(abdomen_ie_times))
+print(np.shape(num_sda_peaks))
+print(np.shape(average_sda_amplitudes))
+print(np.shape(eda_tonic_sds))
+print(np.shape(average_co2s))
+print(np.shape(average_vocs))
 
+try:
+    with open(csv_filepath, 'a', newline='') as csvfile: 
+        writer = csv.writer(csvfile)
+        for i in range(len(heart_rates)):
+            writer.writerow([particpant_id,
+                            classification,
+                            stress_rating,
+                            reaction_time,
+                            score,
+                            heart_rates[i],
+                            spo2_levels[i],
+                            systolic_amplitudes[i],
+                            hrvs[i],
+                            chest_rates[i],
+                            chest_rvts[i],
+                            chest_symmetries_pt[i],
+                            chest_symmetries_rd[i],
+                            chest_inhale_times[i],
+                            chest_exhale_times[i],
+                            chest_ie_times[i],
+                            abdomen_rates[i],
+                            abdomen_rvts[i],
+                            abdomen_symmetries_pt[i],
+                            abdomen_symmetries_rd[i],
+                            abdomen_inhale_times[i],
+                            abdomen_exhale_times[i],
+                            abdomen_ie_times[i],
+                            num_sda_peaks[i],
+                            average_sda_amplitudes[i],
+                            eda_tonic_sds[i],
+                            average_co2s[i],
+                            average_vocs[i]])
+        print("Data written to csv file")
+except Exception as e:
+    print("Error occurred while writing to the CSV file:", e)
 
-# try:
-#     with open(csv_filepath, 'a', newline='') as csvfile: 
-#         writer = csv.writer(csvfile)
-#         for i in range(len(heart_rates)):
-#             writer.writerow([classification,
-#                             heart_rates[i],
-#                             spo2_levels[i],
-#                             systolic_amplitudes[i],
-#                             hrvs[i],
-#                             chest_rates[i],
-#                             chest_rvts[i],
-#                             chest_symmetries_pt[i],
-#                             chest_symmetries_rd[i],
-#                             chest_inhale_times[i],
-#                             chest_exhale_times[i],
-#                             chest_ie_times[i],
-#                             abdomen_rates[i],
-#                             abdomen_rvts[i],
-#                             abdomen_symmetries_pt[i],
-#                             abdomen_symmetries_rd[i],
-#                             abdomen_inhale_times[i],
-#                             abdomen_exhale_times[i],
-#                             abdomen_ie_times[i],
-#                             num_sda_peaks[i],
-#                             average_sda_amplitudes[i],
-#                             eda_tonic_sds[i],
-#                             average_co2s[i],
-#                             average_vocs[i]])
-#         print("Data written to csv file")
-# except Exception as e:
-#     print("Error occurred while writing to the CSV file:", e)
-
-# print("CSV File Path:", csv_filepath)
+print("CSV File Path:", csv_filepath)
