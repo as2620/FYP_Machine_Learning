@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Read the data from the CSV file
-csv_filename = "stress_data.csv"
+csv_filename = "stress_gender_data.csv"
 csv_filepath = os.path.abspath(os.path.join("..", "..", "Machine_Learning_Data", csv_filename))
 
 data = pd.read_csv(csv_filepath)
@@ -37,25 +37,16 @@ print("Shape of data:", data.shape)
 # features = ['Number of SDA Peaks', 'Average SDA Amplitudes']
 
 # CO2/VOC Features
-# features = ['Average CO2 Exhaled', 'Average VOC Exhaled']
-
-# Features from Histogram Analysis
-# features = ['Heart Rate', 'HRV', 'Average Chest Symmetry Rise-Decay', 'Average Chest Inhale Time', 'Average Chest Exhale Time','Average Chest Inhale-Exhale Ratio',
-#             'Average CO2 Exhaled', 'Average VOC Exhaled']
-
-# Features for Classification
-features = ['Heart Rate', 'Average Systolic Amplitude', 'HRV', 'Average Chest Breathing Rate', 'Average Chest RVT', 'Average Chest Symmetry Rise-Decay', 
-            'Average Chest Inhale Time', 'Average Chest Inhale-Exhale Ratio', 'Average Abdomen RVT', 'Average Abdomen Symmetry Rise-Decay', 'Average Abdomen Inhale Exhale Ratio', 
-            'Number of SDA Peaks', 'Average SDA Amplitudes', 'Average CO2 Exhaled', 'Average VOC Exhaled']
+features = ['Average CO2 Exhaled', 'Average VOC Exhaled']
 
 # Specify the desired order for the classes
-class_order = ['Rest', 'S1', 'S2']
+class_order = ['M', 'F']
 
 # Outlier Removal for each feature for each class
 for feature in features:
     for class_value in class_order:
         # Filter data for the current class
-        class_data = data[data['Breathing Type'] == class_value][feature]
+        class_data = data[data['Gender'] == class_value][feature]
         # Calculate Q1, Q3, and IQR
         Q1 = class_data.quantile(0.25)
         Q3 = class_data.quantile(0.75)
@@ -64,7 +55,7 @@ for feature in features:
         lower_bound = Q1 - 1.5 * IQR
         upper_bound = Q3 + 1.5 * IQR
         # Remove outliers
-        data = data.drop(data[(data['Breathing Type'] == class_value) & ((data[feature] < lower_bound) | (data[feature] > upper_bound))].index)
+        data = data.drop(data[(data['Gender'] == class_value) & ((data[feature] < lower_bound) | (data[feature] > upper_bound))].index)
 
 # Drop any rows with missing data
 data = data.dropna()
@@ -76,7 +67,7 @@ print("Shape of data after outlier removal:", data.shape)
 x = data.loc[:, features].values
 
 # Separating out the target
-y = data.loc[:,['Breathing Type']].values.ravel()  # Using ravel() to convert to 1d array
+y = data.loc[:,['Gender']].values.ravel()  # Using ravel() to convert to 1d array
 
 # Standardizing the features
 x = StandardScaler().fit_transform(x)
@@ -95,7 +86,7 @@ print(lda.scalings_)
 
 # Concatenate the LDA data with the target data
 lda_data = pd.DataFrame(data=lda_components, columns=['LDA Component ' + str(i+1) for i in range(num_components)])
-final_data = pd.concat([lda_data, data.reset_index(drop=True)[['Breathing Type']]], axis=1)
+final_data = pd.concat([lda_data, data.reset_index(drop=True)[['Gender']]], axis=1)
 
 # Print the LDA data
 print(lda_data)
@@ -106,10 +97,10 @@ ax.set_xlabel('LDA Component 1', fontsize=15)
 ax.set_title('1 Component LDA', fontsize=20)
 
 targets = class_order
-colors = ["#ffa500", "#79c314", "#36cedc"]
+colors = ["#36cedc", "#ffa500"]
 
 for target, color in zip(targets, colors):
-    indicesToKeep = final_data['Breathing Type'] == target
+    indicesToKeep = final_data['Gender'] == target
     ax.scatter(final_data.loc[indicesToKeep, 'LDA Component 1'], np.zeros_like(final_data.loc[indicesToKeep, 'LDA Component 1']), c=color, label=target, s=50)
 
 ax.legend()
@@ -123,7 +114,7 @@ ax.set_ylabel('LDA Component 2', fontsize=15)
 ax.set_title('2 Component LDA', fontsize=20)
 
 for target, color in zip(targets, colors):
-    indicesToKeep = final_data['Breathing Type'] == target
+    indicesToKeep = final_data['Gender'] == target
     ax.scatter(final_data.loc[indicesToKeep, 'LDA Component 1'], final_data.loc[indicesToKeep, 'LDA Component 2'], c=color, label=target, s=50)
 
 ax.legend()
@@ -139,7 +130,7 @@ ax.set_zlabel('LDA Component 3', fontsize=15)
 ax.set_title('3 Component LDA', fontsize=20)
 
 for target, color in zip(targets, colors):
-    indicesToKeep = final_data['Breathing Type'] == target
+    indicesToKeep = final_data['Gender'] == target
     ax.scatter(final_data.loc[indicesToKeep, 'LDA Component 1'], final_data.loc[indicesToKeep, 'LDA Component 2'], final_data.loc[indicesToKeep, 'LDA Component 3'], c=color, label=target, s=50)
 
 ax.legend()

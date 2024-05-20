@@ -7,7 +7,9 @@ from sklearn.preprocessing import LabelEncoder
 
 # Read the data from the CSV file
 # csv_filename = "breathing_rate_data.csv"
-csv_filename = "breathing_rate_data_3_5_30_40.csv"
+# csv_filename = "breathing_rate_data_3_5_30_40.csv"
+# csv_filename = "box_data.csv"
+csv_filename = "stress_data.csv"
 
 csv_filepath = os.path.abspath(os.path.join("..", "..", "Machine_Learning_Data", csv_filename))
 
@@ -26,7 +28,10 @@ data = pd.read_csv(csv_filepath)
 data = data.dropna()
 
 # Specify the desired order for the classes
-class_order = ['3bpm', '5bpm', '10bpm', '15bpm', '20bpm', '30bpm', '40bpm']
+# class_order = ['3bpm', '5bpm', '10bpm', '15bpm', '20bpm', '30bpm', '40bpm']
+# class_order = ['Rest', 'Box']
+class_order = ['Rest', 'S1', 'S2']
+
 data['Breathing Type'] = pd.Categorical(data['Breathing Type'], categories=class_order, ordered=True)
 
 # Group the data by the class column
@@ -80,7 +85,9 @@ le = LabelEncoder()
 y = le.fit_transform(y)
 
 # Define a custom color palette
-palette = sns.color_palette(["#e81416", "#ffa500", "#faeb36", "#79c314", "#36cedc" ,"#487de7", "#70369d"], len(class_order))
+# palette = sns.color_palette(["#e81416", "#ffa500", "#faeb36", "#79c314", "#36cedc" ,"#487de7", "#70369d"], len(class_order))
+# palette = sns.color_palette(["#ffa500", "#36cedc"], len(class_order))
+palette = sns.color_palette(["#ffa500", "#79c314", "#36cedc"], len(class_order))
 
 # Visualize the distribution of each feature using histograms.
 for i, feature in enumerate(column_names[1:]):

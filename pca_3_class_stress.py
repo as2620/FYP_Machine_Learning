@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Read the data from the CSV file
-csv_filename = "box_data.csv"
+csv_filename = "stress_data.csv"
 # csv_filename = "breathing_rate_data.csv"
 csv_filepath = os.path.abspath(os.path.join("..", "..", "Machine_Learning_Data", csv_filename))
 
@@ -39,8 +39,13 @@ features = ['Heart Rate', 'SpO2', 'Average Systolic Amplitude', 'HRV', 'Average 
 # CO2/VOC Features
 # features = ['Average CO2 Exhaled', 'Average VOC Exhaled']
 
+# Features for Classification
+# features = ['Heart Rate', 'Average Systolic Amplitude', 'HRV', 'Average Chest Breathing Rate', 'Average Chest RVT', 'Average Chest Symmetry Rise-Decay', 
+#             'Average Chest Inhale Time', 'Average Chest Inhale-Exhale Ratio', 'Average Abdomen RVT', 'Average Abdomen Symmetry Rise-Decay', 'Average Abdomen Inhale Exhale Ratio', 
+#             'Number of SDA Peaks', 'Average SDA Amplitudes', 'Average CO2 Exhaled', 'Average VOC Exhaled']
+
 # Specify the desired order for the classes
-class_order = ['Rest', 'Box']
+class_order = ['Rest', 'S1', 'S2']
 
 # Outlier Removal for each feature for each class
 for feature in features:
@@ -97,7 +102,7 @@ ax.set_ylabel('Principal Component 2', fontsize = 15)
 ax.set_title('2 Component PCA', fontsize = 20)
 
 targets = class_order
-colors = ["#ffa500", "#36cedc"]
+colors = ["#ffa500", "#79c314", "#36cedc"]
 
 for target, color in zip(targets,colors):
     indicesToKeep = data['Breathing Type'] == target
@@ -118,7 +123,7 @@ ax.set_zlabel('Principal Component 3', fontsize = 15)
 ax.set_title('3 Component PCA', fontsize = 20)
 
 targets = class_order
-colors = ["#ffa500", "#36cedc"]
+colors = ["#ffa500", "#79c314", "#36cedc"]
 
 for target, color in zip(targets,colors):
     indicesToKeep = data['Breathing Type'] == target

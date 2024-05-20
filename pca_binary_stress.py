@@ -6,20 +6,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Read the data from the CSV file
-csv_filename = "box_data.csv"
+csv_filename = "stress_data.csv"
 # csv_filename = "breathing_rate_data.csv"
 csv_filepath = os.path.abspath(os.path.join("..", "..", "Machine_Learning_Data", csv_filename))
 
 data = pd.read_csv(csv_filepath)
 
 # All Features
-features = ['Heart Rate', 'SpO2', 'Average Systolic Amplitude', 'HRV', 'Average Chest Breathing Rate', 
-            'Average Chest RVT', 'Average Chest Symmetry Peak-Trough', 'Average Chest Symmetry Rise-Decay', 
-            'Average Chest Inhale Time', 'Average Chest Exhale Time','Average Chest Inhale-Exhale Ratio', 
-            'Average Abdomen Breathing Rate', 'Average Abdomen RVT', 'Average Abdomen Symmetry Peak-Trough', 
-            'Average Abdomen Symmetry Rise-Decay', 'Average Abdomen Inhale Time', 'Average Abdomen Exhale Time', 
-            'Average Abdomen Inhale Exhale Ratio', 'Number of SDA Peaks', 'Average SDA Amplitudes', 
-            'Average CO2 Exhaled', 'Average VOC Exhaled']
+# features = ['Heart Rate', 'SpO2', 'Average Systolic Amplitude', 'HRV', 'Average Chest Breathing Rate', 
+#             'Average Chest RVT', 'Average Chest Symmetry Peak-Trough', 'Average Chest Symmetry Rise-Decay', 
+#             'Average Chest Inhale Time', 'Average Chest Exhale Time','Average Chest Inhale-Exhale Ratio', 
+#             'Average Abdomen Breathing Rate', 'Average Abdomen RVT', 'Average Abdomen Symmetry Peak-Trough', 
+#             'Average Abdomen Symmetry Rise-Decay', 'Average Abdomen Inhale Time', 'Average Abdomen Exhale Time', 
+#             'Average Abdomen Inhale Exhale Ratio', 'Number of SDA Peaks', 'Average SDA Amplitudes', 
+#             'Average CO2 Exhaled', 'Average VOC Exhaled']
 
 # Breathing Features
 # features = ['Average Chest Breathing Rate', 'Average Chest RVT', 'Average Chest Symmetry Peak-Trough',  'Average Chest Symmetry Rise-Decay', 
@@ -37,10 +37,10 @@ features = ['Heart Rate', 'SpO2', 'Average Systolic Amplitude', 'HRV', 'Average 
 # features = ['Number of SDA Peaks', 'Average SDA Amplitudes']
 
 # CO2/VOC Features
-# features = ['Average CO2 Exhaled', 'Average VOC Exhaled']
+features = ['Average CO2 Exhaled', 'Average VOC Exhaled']
 
 # Specify the desired order for the classes
-class_order = ['Rest', 'Box']
+class_order = ['Rest', 'S1', 'S2']
 
 # Outlier Removal for each feature for each class
 for feature in features:
@@ -59,6 +59,11 @@ for feature in features:
 
 # Drop any rows with missing data
 data = data.dropna()
+
+# Combine S1 and S2 classes into one "Stress" class
+data['Breathing Type'] = data['Breathing Type'].replace({'S1': 'Stress', 'S2': 'Stress'})
+
+class_order = ['Rest', 'Stress']
 
 # Separating out the features
 x = data.loc[:, features].values

@@ -27,6 +27,7 @@ features = ['Heart Rate', 'SpO2', 'Average Systolic Amplitude', 'HRV', 'Average 
             'Average Chest RVT', 'Average Chest Symmetry Peak-Trough', 'Average Chest Symmetry Rise-Decay', 
             'Average Abdomen Breathing Rate', 'Average Abdomen RVT', 'Average Abdomen Symmetry Peak-Trough', 
             'Number of SDA Peaks', 'Average SDA Amplitudes', 'Average CO2 Exhaled ', 'Average VOC Exhaled']
+            
 target = 'Breathing Type'
 
 # Separate features and target variable
