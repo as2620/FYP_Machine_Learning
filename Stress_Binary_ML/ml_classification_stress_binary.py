@@ -1,11 +1,22 @@
 import os
 import pandas as pd
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier, AdaBoostClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+LOGISTIC_REGRESSION = False
+SVM = False
+RANDOM_FOREST = False
+GRADIENT_BOOSTING = False
+ADA_BOOST = True
+KNN = False
 
 def remove_outliers(df, feature):
     Q1 = df[feature].quantile(0.25)
@@ -23,7 +34,8 @@ data = pd.read_csv(csv_filepath)
 # Drop any rows with missing data
 data = data.dropna()
 
-print(data['Breathing Type'].value_counts())
+# Combine S1 and S2 classes into one "Stress" class
+data['Breathing Type'] = data['Breathing Type'].replace({'S1': 'Stress', 'S2': 'Stress'})
 
 # Define features and target variable
 # All Features
@@ -34,7 +46,7 @@ features = ['Heart Rate', 'SpO2', 'Average Systolic Amplitude', 'HRV', 'Average 
             'Average Abdomen Symmetry Rise-Decay', 'Average Abdomen Inhale Time', 'Average Abdomen Exhale Time', 
             'Average Abdomen Inhale Exhale Ratio', 'Number of SDA Peaks', 'Average SDA Amplitudes', 
             'Average CO2 Exhaled', 'Average VOC Exhaled']
-
+            
 target = 'Breathing Type'
 
 # Remove outliers for each feature within each class
@@ -50,41 +62,60 @@ for feature in features:
 x = data[features]
 y = data[target]
 
-# Split the data into training and test sets (80-20 split)
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=30)
+# Split the data into training and test sets based on participant IDs
+participant_ids = data['Participant ID'].unique()
+train_participant_ids, test_participant_ids = train_test_split(participant_ids, test_size=0.2, random_state=42)
+
+print("Train Participant IDs:", train_participant_ids)
+print("Test Participant IDs:", test_participant_ids)
+
+# Split the data based on participant IDs
+train_data = data[data['Participant ID'].isin(train_participant_ids)]
+test_data = data[data['Participant ID'].isin(test_participant_ids)]
+
+# Separate features and target variable for training and test sets
+x_train = train_data[features]
+y_train = train_data[target]
+x_test = test_data[features]
+y_test = test_data[target]
 
 # Standardize the features
 scaler = StandardScaler()
 x_train_scaled = scaler.fit_transform(x_train)
 x_test_scaled = scaler.transform(x_test)
 
-# Initialize the Gradient Boosting model
-gbc_model = GradientBoostingClassifier()
+if LOGISTIC_REGRESSION:
+    model = LogisticRegression()
+elif SVM:
+    model = SVC()
+elif RANDOM_FOREST:
+    model = RandomForestClassifier()
+elif GRADIENT_BOOSTING:
+    model = GradientBoostingClassifier()
+elif ADA_BOOST:
+    model = AdaBoostClassifier()
+elif KNN:
+    model = KNeighborsClassifier()
 
-# Perform cross-validation on the training set
-cv_scores = cross_val_score(gbc_model, x_train_scaled, y_train, cv=10)
-
-print("Cross-Validation Scores:", cv_scores)
-print("Mean Accuracy:", cv_scores.mean())
-
-# Train the model on the entire training set
-gbc_model.fit(x_train_scaled, y_train)
+# Train the model
+model.fit(x_train_scaled, y_train)
 
 # Predict on the test set
-gbc_y_pred = gbc_model.predict(x_test_scaled)
+y_pred = model.predict(x_test_scaled)
 
-# Evaluate the model on the test set
-accuracy = accuracy_score(y_test, gbc_y_pred)
-print("Gradient Boosting Accuracy (Test Set):", accuracy)
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
 
-print("Gradient Boosting Classification Report (Test Set):")
-print(classification_report(y_test, gbc_y_pred))
+# Print classification report
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
 
-# Plot confusion matrix for the test set
-conf_mat = confusion_matrix(y_test, gbc_y_pred)
+# Plot confusion matrix
+conf_mat = confusion_matrix(y_test, y_pred)
 plt.figure(figsize=(8, 6))
-sns.heatmap(conf_mat, annot=True, fmt='d', cmap='Blues', xticklabels=gbc_model.classes_, yticklabels=gbc_model.classes_)
+sns.heatmap(conf_mat, annot=True, fmt='d', cmap='Blues', xticklabels=model.classes_, yticklabels=model.classes_)
 plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
-plt.title('Gradient Boosting Confusion Matrix (Test Set)')
+plt.title('Confusion Matrix')
 plt.show()
